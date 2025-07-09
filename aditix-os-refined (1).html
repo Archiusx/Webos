@@ -1,0 +1,1199 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Aditix OS</title>
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      background-color: #000;
+      color: white;
+      height: 100vh;
+      overflow: hidden;
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+    }
+
+    .desktop {
+      height: calc(100vh - 40px);
+      background-color: #000;
+      background-image: url('https://uploads.onecompiler.io/439q4yegy/43px7cnaw/file_00000000369861f8bd75e5d25fbe75c6.png');
+      background-repeat: no-repeat;
+      background-position: center center;
+      background-size: 300px auto;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .taskbar {
+      height: 40px;
+      background: linear-gradient(135deg, #1a1a1a 0%, #2a2a2a 100%);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 10px;
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      border-top: 1px solid #333;
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      z-index: 1000;
+    }
+
+    .start-button {
+      background: none;
+      border: none;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      padding: 8px;
+      border-radius: 8px;
+      transition: all 0.2s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+      transform: scale(1);
+    }
+
+    .start-button:hover {
+      background: rgba(255, 255, 255, 0.1);
+      transform: scale(1.1);
+    }
+
+    .start-button:active {
+      transform: scale(0.95);
+    }
+
+    .start-button img {
+      height: 24px;
+      width: 24px;
+      margin-right: 5px;
+      transition: transform 0.2s ease;
+    }
+
+    .start-menu {
+      position: absolute;
+      bottom: 50px;
+      left: 10px;
+      background: rgba(34, 34, 34, 0.95);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      border: 1px solid rgba(68, 68, 68, 0.5);
+      border-radius: 12px;
+      padding: 12px;
+      width: 220px;
+      display: none;
+      flex-direction: column;
+      gap: 8px;
+      z-index: 2000;
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+      transform: scale(0.9) translateY(20px);
+      opacity: 0;
+      transition: all 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+    }
+
+    .start-menu.show {
+      transform: scale(1) translateY(0);
+      opacity: 1;
+    }
+
+    .start-menu a {
+      text-decoration: none;
+      color: white;
+      padding: 12px 16px;
+      background: rgba(51, 51, 51, 0.6);
+      border-radius: 8px;
+      text-align: left;
+      transition: all 0.2s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+      border: 1px solid transparent;
+      font-size: 14px;
+      font-weight: 500;
+    }
+
+    .start-menu a:hover {
+      background: rgba(85, 85, 85, 0.8);
+      border-color: rgba(255, 255, 255, 0.2);
+      transform: translateY(-2px);
+      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3);
+    }
+
+    .start-menu a:active {
+      transform: translateY(0);
+    }
+
+    .app-window {
+      position: absolute;
+      top: 60px;
+      left: 5%;
+      width: 90%;
+      height: 70%;
+      background: rgba(27, 27, 27, 0.95);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      border: 1px solid rgba(68, 68, 68, 0.5);
+      border-radius: 12px;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      z-index: 100;
+      box-shadow: 0 16px 64px rgba(0, 0, 0, 0.5);
+      transform: scale(0.9) translateY(20px);
+      opacity: 0;
+      transition: all 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+      will-change: transform, opacity;
+    }
+
+    .app-window.show {
+      transform: scale(1) translateY(0);
+      opacity: 1;
+    }
+
+    .app-window.minimized {
+      transform: scale(0.8) translateY(100px);
+      opacity: 0;
+    }
+
+    .window-titlebar {
+      background: linear-gradient(135deg, #2c2c2c 0%, #3c3c3c 100%);
+      color: white;
+      padding: 8px 16px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      cursor: move;
+      border-bottom: 1px solid rgba(68, 68, 68, 0.5);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+    }
+
+    .window-title {
+      font-size: 14px;
+      font-weight: 600;
+    }
+
+    .window-controls {
+      display: flex;
+      gap: 8px;
+    }
+
+    .window-controls button {
+      background: none;
+      border: none;
+      color: white;
+      font-size: 14px;
+      cursor: pointer;
+      width: 28px;
+      height: 28px;
+      border-radius: 6px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.2s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+      transform: scale(1);
+    }
+
+    .window-controls button:hover {
+      background: rgba(255, 255, 255, 0.1);
+      transform: scale(1.1);
+    }
+
+    .window-controls button:active {
+      transform: scale(0.9);
+    }
+
+    .close-btn:hover {
+      background: #ff5f57 !important;
+      color: white;
+    }
+
+    .min-btn:hover {
+      background: #ffbd2e !important;
+      color: black;
+    }
+
+    .max-btn:hover {
+      background: #28ca42 !important;
+      color: black;
+    }
+
+    .app-window iframe {
+      flex-grow: 1;
+      width: 100%;
+      height: 100%;
+      border: none;
+      border-radius: 0 0 12px 12px;
+    }
+
+    #taskbar-apps {
+      display: flex;
+      gap: 6px;
+    }
+
+    #taskbar-apps button {
+      background: rgba(42, 42, 42, 0.8);
+      border: 1px solid rgba(68, 68, 68, 0.5);
+      color: white;
+      padding: 6px 12px;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 14px;
+      font-weight: 500;
+      transition: all 0.2s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+      transform: scale(1);
+      min-width: 40px;
+    }
+
+    #taskbar-apps button:hover {
+      background: rgba(68, 68, 68, 0.8);
+      transform: scale(1.05);
+      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3);
+    }
+
+    #taskbar-apps button:active {
+      transform: scale(0.95);
+    }
+
+    #taskbar-apps button.active {
+      background: rgba(255, 255, 255, 0.1);
+      border-color: rgba(255, 255, 255, 0.3);
+    }
+
+    #time {
+      font-size: 14px;
+      color: white;
+      font-weight: 500;
+      padding: 8px 12px;
+      border-radius: 8px;
+      background: rgba(255, 255, 255, 0.05);
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+    }
+
+    /* Folder Icon */
+    .folder-icon {
+      background: linear-gradient(135deg, #f3f3f3 0%, #e8e8e8 100%);
+      color: #333;
+      width: 100px;
+      height: 100px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      border-radius: 12px;
+      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
+      cursor: pointer;
+      font-size: 28px;
+      margin: 20px;
+      transition: all 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+      transform: scale(1);
+      position: absolute;
+      top: 50px;
+      left: 50px;
+    }
+
+    .folder-icon:hover {
+      transform: scale(1.1) translateY(-4px);
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+    }
+
+    .folder-icon:active {
+      transform: scale(0.95);
+    }
+
+    .folder-icon .label {
+      font-size: 13px;
+      margin-top: 8px;
+      font-weight: 600;
+    }
+
+    /* Folder Window */
+    .folder-window {
+      display: none;
+      position: fixed;
+      top: 15%;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 400px;
+      background: rgba(255, 255, 255, 0.95);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      color: #222;
+      border-radius: 12px;
+      border: 1px solid rgba(204, 204, 204, 0.5);
+      box-shadow: 0 16px 64px rgba(0, 0, 0, 0.3);
+      z-index: 9999;
+      overflow: hidden;
+      opacity: 0;
+      transform: translateX(-50%) scale(0.9) translateY(20px);
+      transition: all 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+    }
+
+    .folder-window.show {
+      opacity: 1;
+      transform: translateX(-50%) scale(1) translateY(0);
+    }
+
+    .folder-window .titlebar {
+      background: linear-gradient(135deg, #0078d7 0%, #005a9e 100%);
+      padding: 12px 16px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      color: white;
+      font-weight: 600;
+      cursor: move;
+    }
+
+    .folder-window .titlebar button {
+      background: none;
+      border: none;
+      color: white;
+      font-size: 16px;
+      cursor: pointer;
+      width: 28px;
+      height: 28px;
+      border-radius: 6px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.2s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+      margin-left: 4px;
+    }
+
+    .folder-window .titlebar button:hover {
+      background: rgba(255, 255, 255, 0.2);
+      transform: scale(1.1);
+    }
+
+    .folder-window .titlebar button:active {
+      transform: scale(0.9);
+    }
+
+    .folder-content {
+      padding: 20px;
+    }
+
+    .file-item {
+      background: rgba(245, 245, 245, 0.8);
+      padding: 16px;
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      border: 1px solid rgba(221, 221, 221, 0.5);
+      transition: all 0.2s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+      cursor: pointer;
+    }
+
+    .file-item:hover {
+      background: rgba(235, 235, 235, 0.9);
+      transform: translateY(-2px);
+      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
+    }
+
+    .file-item a {
+      color: #0078d7;
+      text-decoration: none;
+      font-size: 14px;
+      margin-left: 12px;
+      font-weight: 500;
+    }
+
+    /* Splash Screen */
+    .splash-screen {
+      position: fixed;
+      inset: 0;
+      background: #000;
+      z-index: 9999;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      opacity: 1;
+      transition: opacity 0.8s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+    }
+
+    .splash-screen.hide {
+      opacity: 0;
+      pointer-events: none;
+    }
+
+    .splash-screen img {
+      width: 300px;
+      margin-bottom: 40px;
+      animation: logoFloat 3s ease-in-out infinite;
+    }
+
+    .spinner {
+      width: 40px;
+      height: 40px;
+      border: 4px solid rgba(255, 255, 255, 0.3);
+      border-top: 4px solid white;
+      border-radius: 50%;
+      animation: spin 1s cubic-bezier(0.25, 0.46, 0.45, 0.94) infinite;
+    }
+
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+
+    @keyframes logoFloat {
+      0%, 100% { transform: translateY(0px); }
+      50% { transform: translateY(-10px); }
+    }
+
+    /* Smooth scrollbars */
+    ::-webkit-scrollbar {
+      width: 8px;
+    }
+
+    ::-webkit-scrollbar-track {
+      background: rgba(255, 255, 255, 0.1);
+      border-radius: 4px;
+    }
+
+    ::-webkit-scrollbar-thumb {
+      background: rgba(255, 255, 255, 0.3);
+      border-radius: 4px;
+    }
+
+    ::-webkit-scrollbar-thumb:hover {
+      background: rgba(255, 255, 255, 0.5);
+    }
+
+    /* Hardware acceleration */
+    .app-window,
+    .start-menu,
+    .folder-window,
+    .folder-icon,
+    .taskbar,
+    .window-controls button,
+    #taskbar-apps button {
+      will-change: transform;
+      transform: translateZ(0);
+      -webkit-backface-visibility: hidden;
+      backface-visibility: hidden;
+    }
+  </style>
+</head>
+<body>
+  
+  <!-- Splash Screen -->
+  <div id="splash" class="splash-screen">
+    <img src="https://uploads.onecompiler.io/439q4yegy/43px7cnaw/file_00000000369861f8bd75e5d25fbe75c6.png">
+    <div class="spinner"></div>
+  </div>
+
+  <!-- Folder Icon -->
+  <div class="folder-icon" onclick="showFolderWindow()">
+    📂
+    <div class="label">My Folder</div>
+  </div>
+
+  <!-- Folder Window -->
+  <div id="folderWindow" class="folder-window">
+    <div class="titlebar">
+      <div>📁 My Folder</div>
+      <div>
+        <button onclick="minimizeFolderWindow()">➖</button>
+        <button onclick="maximizeFolderWindow()">🗖</button>
+        <button onclick="closeFolderWindow()">❌</button>
+      </div>
+    </div>
+    <div id="folderContent" class="folder-content">
+      <div class="file-item">
+        📄 
+        <a href="https://drive.google.com/uc?export=download&id=1X11gPX5YUpsN1BKTArYi2EBp5id0lC-3" 
+           target="_blank">
+           Open File (PDF) 📱
+        </a>
+      </div>
+    </div>
+  </div>
+
+  <!-- Desktop -->
+  <div class="desktop" id="desktop"></div>
+
+  <!-- Taskbar -->
+  <div class="taskbar">
+    <button class="start-button" onclick="toggleStartMenu()">
+      <img src="https://uploads.onecompiler.io/439q4yegy/43px7cnaw/Screenshot_2025-07-07-07-07-13-336_com.android.chrome.png" alt="Aditix OS Logo">
+    </button>
+    <div id="taskbar-apps"></div>
+    <div id="time"></div>
+  </div>
+
+  <!-- Start Menu -->
+  <div class="start-menu" id="startMenu">
+    <a href="#" onclick="openApp('DBATU Portal', 'https://dbatuportal.onecompiler.app')">DBATU Portal</a>
+    <a href="#" onclick="openApp('Calculator', 'https://calculatorx.onecompiler.app')">Calculator</a>
+    <a href="#" onclick="openApp('Notepad', 'https://notepad.onecompiler.app')">Notepad</a>
+    <a href="#" onclick="openApp('WebX', 'https://webx.onecompiler.app')">WebX Browser</a>
+    <a href="#" onclick="openApp('UthPortal', 'https://uthportal.onecompiler.app')">UthPortal</a>
+  </div>
+
+  <!-- App Window Template -->
+  <template id="appWindowTemplate">
+    <div class="app-window">
+      <div class="window-titlebar">
+        <span class="window-title">App</span>
+        <div class="window-controls">
+          <button class="min-btn">—</button>
+          <button class="max-btn">🗖</button>
+          <button class="close-btn">✕</button>
+        </div>
+      </div>
+      <iframe src="" frameborder="0"></iframe>
+    </div>
+  </template>
+
+  <script>
+    // Initialize splash screen
+    setTimeout(() => {
+      const splash = document.getElementById("splash");
+      splash.classList.add('hide');
+      setTimeout(() => splash.style.display = 'none', 800);
+    }, 3000);
+
+    // Time updates
+    const timeElement = document.getElementById('time');
+    function updateTime() {
+      const now = new Date();
+      timeElement.textContent = now.toLocaleTimeString();
+    }
+    setInterval(updateTime, 1000);
+    updateTime();
+
+    // Start menu functionality
+    function toggleStartMenu() {
+      const menu = document.getElementById('startMenu');
+      const isVisible = menu.style.display === 'flex';
+      
+      if (isVisible) {
+        menu.classList.remove('show');
+        setTimeout(() => menu.style.display = 'none', 300);
+      } else {
+        menu.style.display = 'flex';
+        requestAnimationFrame(() => menu.classList.add('show'));
+      }
+    }
+
+    // Close start menu when clicking outside
+    window.addEventListener('click', (e) => {
+      if (!e.target.closest('.start-button') && !e.target.closest('#startMenu')) {
+        const menu = document.getElementById('startMenu');
+        if (menu.style.display === 'flex') {
+          menu.classList.remove('show');
+          setTimeout(() => menu.style.display = 'none', 300);
+        }
+      }
+    });
+
+    // Folder window functionality
+    let folderMaximized = false;
+    let folderMinimized = false;
+
+    function showFolderWindow() {
+      const window = document.getElementById('folderWindow');
+      window.style.display = 'block';
+      requestAnimationFrame(() => window.classList.add('show'));
+    }
+
+    function closeFolderWindow() {
+      const window = document.getElementById('folderWindow');
+      window.classList.remove('show');
+      setTimeout(() => window.style.display = 'none', 400);
+    }
+
+    function maximizeFolderWindow() {
+      const window = document.getElementById('folderWindow');
+      const content = document.getElementById('folderContent');
+      
+      if (!folderMaximized) {
+        window.style.width = "95%";
+        window.style.height = "90%";
+        window.style.top = "5%";
+        content.style.height = "calc(100% - 60px)";
+        content.style.overflow = "auto";
+        folderMaximized = true;
+      } else {
+        window.style.width = "400px";
+        window.style.height = "auto";
+        window.style.top = "15%";
+        content.style.height = "auto";
+        content.style.overflow = "visible";
+        folderMaximized = false;
+      }
+    }
+
+    function minimizeFolderWindow() {
+      const content = document.getElementById('folderContent');
+      folderMinimized = !folderMinimized;
+      content.style.display = folderMinimized ? "none" : "block";
+    }
+
+    // App window management
+    const desktop = document.getElementById('desktop');
+    const taskbarApps = document.getElementById('taskbar-apps');
+    let activeWindow = null;
+
+    function openApp(title, url) {
+      const existing = [...desktop.children].find(w =>
+        w.querySelector('.window-title')?.textContent === title
+      );
+      
+      if (existing) {
+        existing.style.display = 'flex';
+        existing.classList.remove('minimized');
+        requestAnimationFrame(() => existing.classList.add('show'));
+        setActiveWindow(existing);
+        return;
+      }
+
+      const template = document.getElementById('appWindowTemplate');
+      const clone = template.content.cloneNode(true);
+      const win = clone.querySelector('.app-window');
+      const iframe = clone.querySelector('iframe');
+      const titleBar = clone.querySelector('.window-titlebar');
+      const titleText = clone.querySelector('.window-title');
+      const closeBtn = clone.querySelector('.close-btn');
+      const minBtn = clone.querySelector('.min-btn');
+      const maxBtn = clone.querySelector('.max-btn');
+
+      titleText.textContent = title;
+      iframe.src = url;
+
+      // Window controls
+      closeBtn.onclick = () => {
+        win.classList.remove('show');
+        setTimeout(() => {
+          win.remove();
+          const btn = document.querySelector(`[data-task='${title}']`);
+          if (btn) btn.remove();
+        }, 400);
+      };
+
+      minBtn.onclick = () => {
+        win.classList.add('minimized');
+        setTimeout(() => win.style.display = 'none', 400);
+        updateTaskbarButton(title, false);
+      };
+
+      maxBtn.onclick = () => {
+        const isMaximized = win.style.width === '100%';
+        if (isMaximized) {
+          win.style.width = '90%';
+          win.style.height = '70%';
+          win.style.top = '60px';
+          win.style.left = '5%';
+          win.style.borderRadius = '12px';
+        } else {
+          win.style.width = '100%';
+          win.style.height = 'calc(100% - 40px)';
+          win.style.top = '0';
+          win.style.left = '0';
+          win.style.borderRadius = '0';
+        }
+      };
+
+      // Taskbar button
+      const taskBtn = document.createElement('button');
+      taskBtn.textContent = title.charAt(0).toUpperCase();
+      taskBtn.setAttribute('data-task', title);
+      taskBtn.onclick = () => {
+        const isVisible = win.style.display !== 'none' && win.classList.contains('show');
+        if (isVisible) {
+          win.classList.add('minimized');
+          setTimeout(() => win.style.display = 'none', 400);
+        } else {
+          win.style.display = 'flex';
+          win.classList.remove('minimized');
+          requestAnimationFrame(() => win.classList.add('show'));
+        }
+        updateTaskbarButton(title, !isVisible);
+      };
+
+      taskbarApps.appendChild(taskBtn);
+      desktop.appendChild(win);
+
+      // Show window with animation
+      requestAnimationFrame(() => {
+        win.classList.add('show');
+        setActiveWindow(win);
+      });
+
+      // Dragging functionality
+      let isDragging = false;
+      let offsetX, offsetY;
+
+      function startDrag(e) {
+        isDragging = true;
+        const rect = win.getBoundingClientRect();
+        const clientX = e.clientX || e.touches[0].clientX;
+        const clientY = e.clientY || e.touches[0].clientY;
+        offsetX = clientX - rect.left;
+        offsetY = clientY - rect.top;
+        setActiveWindow(win);
+        win.style.transition = 'none';
+      }
+
+      function drag(e) {
+        if (!isDragging) return;
+        e.preventDefault();
+        const clientX = e.clientX || e.touches[0].clientX;
+        const clientY = e.clientY || e.touches[0].clientY;
+        win.style.left = `${clientX - offsetX}px`;
+        win.style.top = `${clientY - offsetY}px`;
+      }
+
+      function endDrag() {
+        if (!isDragging) return;
+        isDragging = false;
+        win.style.transition = 'all 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94)';
+        
+        // Snap to maximize if dragged to top
+        if (parseInt(win.style.top) < 10) {
+          win.style.top = '0';
+          win.style.left = '0';
+          win.style.width = '100%';
+          win.style.height = 'calc(100% - 40px)';
+          win.style.borderRadius = '0';
+        }
+      }
+
+      // Mouse events
+      titleBar.addEventListener('mousedown', startDrag);
+      window.addEventListener('mousemove', drag);
+      window.addEventListener('mouseup', endDrag);
+
+      // Touch events
+      titleBar.addEventListener('touchstart', startDrag);
+      window.addEventListener('touchmove', drag);
+      window.addEventListener('touchend', endDrag);
+
+      // Focus management
+      win.addEventListener('click', () => setActiveWindow(win));
+    }
+
+    function setActiveWindow(window) {
+      if (activeWindow) {
+        activeWindow.style.zIndex = '100';
+      }
+      activeWindow = window;
+      window.style.zIndex = '200';
+    }
+
+    function updateTaskbarButton(title, active) {
+      const btn = document.querySelector(`[data-task='${title}']`);
+      if (btn) {
+        btn.classList.toggle('active', active);
+      }
+    }
+
+    // Performance optimization
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          entry.target.style.willChange = 'transform';
+        } else {
+          entry.target.style.willChange = 'auto';
+        }
+      });
+    });
+
+    // Observe all animated elements
+    document.querySelectorAll('.app-window, .start-menu, .folder-window').forEach(el => {
+      observer.observe(el);
+    });
+
+    // Close start menu with Escape
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape') {
+        const menu = document.getElementById('startMenu');
+        if (menu.style.display === 'flex') {
+          menu.classList.remove('show');
+          setTimeout(() => menu.style.display = 'none', 300);
+        }
+      }
+    });
+
+    // Enhanced desktop right-click context menu
+    desktop.addEventListener('contextmenu', (e) => {
+      e.preventDefault();
+      showContextMenu(e.clientX, e.clientY);
+    });
+
+    function showContextMenu(x, y) {
+      const existing = document.getElementById('contextMenu');
+      if (existing) existing.remove();
+
+      const contextMenu = document.createElement('div');
+      contextMenu.id = 'contextMenu';
+      contextMenu.style.cssText = `
+        position: fixed;
+        left: ${x}px;
+        top: ${y}px;
+        background: rgba(34, 34, 34, 0.95);
+        backdrop-filter: blur(20px);
+        border: 1px solid rgba(68, 68, 68, 0.5);
+        border-radius: 8px;
+        padding: 8px;
+        z-index: 3000;
+        min-width: 160px;
+        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+        transform: scale(0.9);
+        opacity: 0;
+        transition: all 0.2s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+      `;
+
+      const menuItems = [
+        { text: 'Refresh', action: () => location.reload() },
+        { text: 'New Folder', action: () => console.log('New folder') },
+        { text: 'Properties', action: () => console.log('Properties') }
+      ];
+
+      menuItems.forEach(item => {
+        const menuItem = document.createElement('div');
+        menuItem.textContent = item.text;
+        menuItem.style.cssText = `
+          padding: 8px 12px;
+          color: white;
+          cursor: pointer;
+          border-radius: 4px;
+          transition: background 0.2s ease;
+          font-size: 14px;
+        `;
+        menuItem.addEventListener('mouseenter', () => {
+          menuItem.style.background = 'rgba(255, 255, 255, 0.1)';
+        });
+        menuItem.addEventListener('mouseleave', () => {
+          menuItem.style.background = 'transparent';
+        });
+        menuItem.addEventListener('click', () => {
+          item.action();
+          contextMenu.remove();
+        });
+        contextMenu.appendChild(menuItem);
+      });
+
+      document.body.appendChild(contextMenu);
+      requestAnimationFrame(() => {
+        contextMenu.style.transform = 'scale(1)';
+        contextMenu.style.opacity = '1';
+      });
+
+      // Close on click outside
+      const closeMenu = (e) => {
+        if (!contextMenu.contains(e.target)) {
+          contextMenu.style.transform = 'scale(0.9)';
+          contextMenu.style.opacity = '0';
+          setTimeout(() => contextMenu.remove(), 200);
+          document.removeEventListener('click', closeMenu);
+        }
+      };
+      setTimeout(() => document.addEventListener('click', closeMenu), 10);
+    }
+
+    // Window snap functionality
+    let snapTimeout;
+    function enableWindowSnap(window) {
+      const titleBar = window.querySelector('.window-titlebar');
+      
+      titleBar.addEventListener('mousedown', () => {
+        clearTimeout(snapTimeout);
+        snapTimeout = setTimeout(() => {
+          const rect = window.getBoundingClientRect();
+          const centerX = window.innerWidth / 2;
+          const centerY = window.innerHeight / 2;
+          
+          // Snap to edges
+          if (rect.left < 50) {
+            // Snap left
+            window.style.left = '0';
+            window.style.width = '50%';
+            window.style.height = 'calc(100% - 40px)';
+            window.style.top = '0';
+          } else if (rect.right > window.innerWidth - 50) {
+            // Snap right
+            window.style.left = '50%';
+            window.style.width = '50%';
+            window.style.height = 'calc(100% - 40px)';
+            window.style.top = '0';
+          }
+        }, 500);
+      });
+    }
+
+    // Enhanced app opening with better error handling
+    function openAppSafely(title, url) {
+      try {
+        openApp(title, url);
+        // Close start menu after opening app
+        const menu = document.getElementById('startMenu');
+        if (menu.style.display === 'flex') {
+          menu.classList.remove('show');
+          setTimeout(() => menu.style.display = 'none', 300);
+        }
+      } catch (error) {
+        console.error('Failed to open app:', error);
+        showNotification('Failed to open ' + title, 'error');
+      }
+    }
+
+    // Notification system
+    function showNotification(message, type = 'info') {
+      const notification = document.createElement('div');
+      notification.style.cssText = `
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        background: ${type === 'error' ? 'rgba(255, 59, 48, 0.9)' : 'rgba(0, 122, 255, 0.9)'};
+        color: white;
+        padding: 12px 16px;
+        border-radius: 8px;
+        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+        z-index: 4000;
+        font-size: 14px;
+        font-weight: 500;
+        transform: translateX(100%);
+        opacity: 0;
+        transition: all 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+        backdrop-filter: blur(20px);
+      `;
+      notification.textContent = message;
+      document.body.appendChild(notification);
+
+      requestAnimationFrame(() => {
+        notification.style.transform = 'translateX(0)';
+        notification.style.opacity = '1';
+      });
+
+      setTimeout(() => {
+        notification.style.transform = 'translateX(100%)';
+        notification.style.opacity = '0';
+        setTimeout(() => notification.remove(), 300);
+      }, 3000);
+    }
+
+    // Battery and network status (if available)
+    function updateSystemStatus() {
+      if ('getBattery' in navigator) {
+        navigator.getBattery().then(battery => {
+          const batteryLevel = Math.round(battery.level * 100);
+          const batteryStatus = battery.charging ? '🔌' : batteryLevel < 20 ? '🪫' : '🔋';
+          const statusEl = document.getElementById('systemStatus');
+          if (statusEl) {
+            statusEl.textContent = `${batteryStatus} ${batteryLevel}%`;
+          }
+        });
+      }
+    }
+
+    // Add system status to taskbar
+    const systemStatus = document.createElement('div');
+    systemStatus.id = 'systemStatus';
+    systemStatus.style.cssText = `
+      font-size: 12px;
+      color: rgba(255, 255, 255, 0.8);
+      margin-right: 12px;
+      padding: 4px 8px;
+      border-radius: 4px;
+      background: rgba(255, 255, 255, 0.05);
+    `;
+    document.querySelector('.taskbar').insertBefore(systemStatus, document.getElementById('time'));
+
+    // Update system status periodically
+    updateSystemStatus();
+    setInterval(updateSystemStatus, 30000);
+
+    // Improved window management with Alt+Tab
+    let openWindows = [];
+    let currentWindowIndex = -1;
+
+    document.addEventListener('keydown', (e) => {
+      if (e.altKey && e.key === 'Tab') {
+        e.preventDefault();
+        cycleWindows();
+      }
+    });
+
+    function cycleWindows() {
+      openWindows = [...desktop.querySelectorAll('.app-window')].filter(w => 
+        w.style.display !== 'none' && w.classList.contains('show')
+      );
+      
+      if (openWindows.length === 0) return;
+      
+      currentWindowIndex = (currentWindowIndex + 1) % openWindows.length;
+      setActiveWindow(openWindows[currentWindowIndex]);
+    }
+
+    // Smooth window resizing
+    let isResizing = false;
+    function addResizeHandles(window) {
+      const resizeHandle = document.createElement('div');
+      resizeHandle.style.cssText = `
+        position: absolute;
+        bottom: 0;
+        right: 0;
+        width: 20px;
+        height: 20px;
+        cursor: nw-resize;
+        z-index: 1000;
+      `;
+      
+      let startX, startY, startWidth, startHeight;
+      
+      resizeHandle.addEventListener('mousedown', (e) => {
+        isResizing = true;
+        startX = e.clientX;
+        startY = e.clientY;
+        startWidth = parseInt(window.style.width);
+        startHeight = parseInt(window.style.height);
+        document.addEventListener('mousemove', handleResize);
+        document.addEventListener('mouseup', stopResize);
+      });
+      
+      function handleResize(e) {
+        if (!isResizing) return;
+        const width = startWidth + (e.clientX - startX);
+        const height = startHeight + (e.clientY - startY);
+        
+        window.style.width = Math.max(300, width) + 'px';
+        window.style.height = Math.max(200, height) + 'px';
+      }
+      
+      function stopResize() {
+        isResizing = false;
+        document.removeEventListener('mousemove', handleResize);
+        document.removeEventListener('mouseup', stopResize);
+      }
+      
+      window.style.position = 'relative';
+      window.appendChild(resizeHandle);
+    }
+
+    // Enhanced folder window with file operations
+    function enhanceFolderWindow() {
+      const folderContent = document.getElementById('folderContent');
+      
+      // Add file upload functionality
+      const uploadArea = document.createElement('div');
+      uploadArea.style.cssText = `
+        border: 2px dashed #ccc;
+        border-radius: 8px;
+        padding: 20px;
+        text-align: center;
+        margin-bottom: 16px;
+        transition: all 0.2s ease;
+        cursor: pointer;
+      `;
+      uploadArea.innerHTML = `
+        <div style="font-size: 24px; margin-bottom: 8px;">📁</div>
+        <div>Drop files here or click to upload</div>
+      `;
+      
+      uploadArea.addEventListener('dragover', (e) => {
+        e.preventDefault();
+        uploadArea.style.borderColor = '#0078d7';
+        uploadArea.style.backgroundColor = 'rgba(0, 120, 215, 0.1)';
+      });
+      
+      uploadArea.addEventListener('dragleave', () => {
+        uploadArea.style.borderColor = '#ccc';
+        uploadArea.style.backgroundColor = 'transparent';
+      });
+      
+      uploadArea.addEventListener('drop', (e) => {
+        e.preventDefault();
+        uploadArea.style.borderColor = '#ccc';
+        uploadArea.style.backgroundColor = 'transparent';
+        
+        const files = Array.from(e.dataTransfer.files);
+        files.forEach(file => {
+          addFileToFolder(file.name, file.type);
+        });
+      });
+      
+      folderContent.insertBefore(uploadArea, folderContent.firstChild);
+    }
+
+    function addFileToFolder(fileName, fileType) {
+      const folderContent = document.getElementById('folderContent');
+      const fileItem = document.createElement('div');
+      fileItem.className = 'file-item';
+      fileItem.style.marginTop = '8px';
+      
+      const icon = getFileIcon(fileType);
+      fileItem.innerHTML = `
+        ${icon}
+        <span style="margin-left: 12px; font-size: 14px; font-weight: 500;">${fileName}</span>
+      `;
+      
+      folderContent.appendChild(fileItem);
+      
+      // Animate in
+      fileItem.style.transform = 'translateY(20px)';
+      fileItem.style.opacity = '0';
+      requestAnimationFrame(() => {
+        fileItem.style.transform = 'translateY(0)';
+        fileItem.style.opacity = '1';
+      });
+    }
+
+    function getFileIcon(fileType) {
+      if (fileType.startsWith('image/')) return '🖼️';
+      if (fileType.startsWith('video/')) return '🎥';
+      if (fileType.startsWith('audio/')) return '🎵';
+      if (fileType.includes('pdf')) return '📄';
+      if (fileType.includes('text')) return '📝';
+      return '📁';
+    }
+
+    // Initialize enhanced features
+    enhanceFolderWindow();
+
+    // Smooth startup animation
+    window.addEventListener('load', () => {
+      document.body.style.opacity = '0';
+      document.body.style.transition = 'opacity 0.5s ease';
+      requestAnimationFrame(() => {
+        document.body.style.opacity = '1';
+      });
+    });
+
+    // Performance monitoring
+    let frameCount = 0;
+    let lastTime = performance.now();
+    
+    function measureFPS() {
+      frameCount++;
+      const currentTime = performance.now();
+      
+      if (currentTime - lastTime >= 1000) {
+        const fps = Math.round(frameCount * 1000 / (currentTime - lastTime));
+        console.log(`FPS: ${fps}`);
+        frameCount = 0;
+        lastTime = currentTime;
+      }
+      
+      requestAnimationFrame(measureFPS);
+    }
+    
+    // Start FPS monitoring in development
+    if (window.location.hostname === 'localhost') {
+      measureFPS();
+    }
+
+    // Final initialization
+    console.log('Aditix OS - Refined Edition Loaded Successfully! 🚀');
+    showNotification('Welcome to Aditix OS!', 'info');
+  </script>
+</body>
+</html>
