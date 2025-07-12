@@ -1,5 +1,9 @@
 # 💻 Aditix OS – Web-Based Operating System
 
+<p align="center">
+  <img src="https://i.ibb.co/gBWTBXV/image.png" alt="Aditix OS Screenshot" width="800"/>
+</p>
+
 Aditix OS is a fully web-based, Windows 10-style operating system built for students, developers, and educators. It runs entirely in your browser with a professional UI, multiple productivity apps, and cloud integration.
 
 🔗 **Live Demo:** [https://webos.onecompiler.app](https://webos.onecompiler.app)
@@ -33,7 +37,7 @@ Aditix OS is a fully web-based, Windows 10-style operating system built for stud
 ## 🛠️ Tech Stack
 
 - HTML, CSS, JavaScript
-- Firebase Auth & (optional) Cloud Storage
+- Firebase Auth & Cloud Storage (optional)
 - PDF.js for PDF viewing
 - Google Slides for PPTX viewing
 - Hosted via OneCompiler
@@ -43,21 +47,28 @@ Aditix OS is a fully web-based, Windows 10-style operating system built for stud
 ## 🚀 How to Use
 
 1. Open [https://webos.onecompiler.app](https://webos.onecompiler.app)
-2. Wait for splash screen to finish
+2. Wait for the splash screen to finish
 3. Log in via Firebase (email/password)
-4. Click Start menu to launch any app
-5. Enjoy multitasking and real-time viewing
+4. Click the Start menu to launch any app
+5. Enjoy multitasking and real-time file viewing
 
 ---
 
 ## 📂 Structure Summary
+
+- `index.html`: OS core (UI, taskbar, start menu)
+- `apps/`: Links to external and internal apps
+- `auth/`: Firebase login handling
+- `viewer/`: PDF & PPTX file viewers
+- `filemanager/`: (Upcoming) Cloud + local file manager
+
 ---
 
 ## 🔒 Authentication
 
 - Firebase email/password login
 - Session persistence enabled
-- Secure access to cloud features (upcoming)
+- Secure access to cloud features (coming soon)
 
 ---
 
@@ -75,7 +86,7 @@ Aditix OS is a fully web-based, Windows 10-style operating system built for stud
 - Students & colleges
 - Online exams or coding sessions
 - Lightweight remote OS-like experience
-- Minimal devices with browsers only
+- Minimal devices with just a browser
 
 ---
 
